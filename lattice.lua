@@ -6,26 +6,17 @@ lattice = include("lattice/lib/lattice")
 function init()
   -- basic lattice usage (uses defaults)
   my_lattice = lattice:new()
+  my_lattice2 = lattice:new()
 
-  -- make some patterns
   pattern_a = my_lattice:new_pattern{
-    action = function(t) print("whole notes", t) end,
-    division = 1
-  }
-  pattern_b = my_lattice:new_pattern{
-    action = function(t) print("half notes", t) end,
-    division = 1/2
-  }
-  pattern_c = my_lattice:new_pattern{
-    action = function(t) print("qn", clock.get_beats()) end,
+    action = function(t) print("qn1", clock.get_beats()) end,
     division = 1/4
   }
 
-  -- stop the lattice
-  -- my_lattice:stop()
-
-  pattern_a:toggle()
-  pattern_b:toggle()
+  pattern_b = my_lattice2:new_pattern{
+    action = function(t) print("qn2", clock.get_beats()) end,
+    division = 1/4
+  }
 
   -- demo stuff
   screen_dirty = true
@@ -37,9 +28,16 @@ function key(k, z)
   if k == 2 then
     print("start "..clock.get_beats())
     my_lattice:start()
+    my_lattice2:start()
   elseif k == 3 then
     print("stop "..clock.get_beats())
     my_lattice:stop()
+    my_lattice2:stop()
+  elseif k == 1 then
+    print("restart "..clock.get_beats())
+    my_lattice:hard_restart()
+    my_lattice2:hard_restart()
+    print("restarted "..clock.get_beats())
   end
 
   -- more api
