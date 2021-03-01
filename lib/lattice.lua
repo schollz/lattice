@@ -28,10 +28,10 @@ end
 
 --- start running the lattice
 function Lattice:start()
+  self.enabled = true
   if self.auto and self.superclock_id == nil then
     self.superclock_id = clock.run(self.auto_pulse, self)
   end
-  self.enabled = true
 end
 
 --- stop the lattice
