@@ -1,18 +1,11 @@
 -- lattice wip
 
 -- lattice = include("lib/lattice")
-lattice = require("lattice")
+lattice = include("lattice/lib/lattice")
 
 function init()
   -- basic lattice usage (uses defaults)
   my_lattice = lattice:new()
-  
-  -- named params, each optional
-  another_lattice = lattice:new{
-    auto = false,
-    meter = 5,
-    ppqn = 128
-  }
 
   -- make some patterns
   pattern_a = my_lattice:new_pattern{
@@ -24,17 +17,15 @@ function init()
     division = 1/2
   }
   pattern_c = my_lattice:new_pattern{
-    action = function(t) print("quarter notes", t) end,
+    action = function(t) print("qn", clock.get_beats()) end,
     division = 1/4
   }
-  pattern_d = my_lattice:new_pattern{
-    action = function(t) print("eighth notes", t) end,
-    division = 1/8,
-    enabled = false
-  }
 
-  -- start the lattice
-  my_lattice:start()
+  -- stop the lattice
+  -- my_lattice:stop()
+
+  pattern_a:toggle()
+  pattern_b:toggle()
 
   -- demo stuff
   screen_dirty = true
@@ -44,10 +35,11 @@ end
 function key(k, z)
   if z == 0 then return end
   if k == 2 then
-    pattern_a:toggle()
-    pattern_b:toggle()
+    print("start "..clock.get_beats())
+    my_lattice:start()
   elseif k == 3 then
-    pattern_c:toggle()
+    print("stop "..clock.get_beats())
+    my_lattice:stop()
   end
 
   -- more api
