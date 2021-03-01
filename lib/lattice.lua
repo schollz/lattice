@@ -1,8 +1,8 @@
 --- module for creating a lattice of patterns based on a single fast "superclock"
 --
 -- @module Lattice
--- @release v1.0.0
--- @author tyleretters & ezra
+-- @release v1.1.0
+-- @author tyleretters & ezra & zack
 
 local Lattice, Pattern = {}, {}
 
@@ -32,6 +32,22 @@ function Lattice:start()
   if self.auto and self.superclock_id == nil then
     self.superclock_id = clock.run(self.auto_pulse, self)
   end
+end
+
+--- reset the norns clock and restart lattice
+function Lattice:hard_restart()
+  -- destroy clock, but not the patterns
+  self:stop()
+  if self.superclock_id ~= nil then 
+    clock.cancel(self.superclock_id)
+    self.superclock_id = nil 
+  end
+  for i, pattern in pairs(self.patterns) do
+    self.patterns[i].phase = self.patterns[i].phase_end
+  end
+  self.transport = 0
+  params:set("clock_reset",1)
+  self:start()
 end
 
 --- stop the lattice
@@ -115,6 +131,7 @@ function Pattern:new(args)
   p.action = args.action
   p.enabled = args.enabled
   p.phase = args.phase_end
+  p.phase_end = args.phase_end
   p.flag = false
   return p
 end
