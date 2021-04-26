@@ -44,7 +44,7 @@ function Lattice:reset()
   end
   for i, pattern in pairs(self.patterns) do
     pattern.phase = pattern.division * self.ppqn * self.meter
-    pattern.downbeat = true
+    pattern.downbeat = false
   end
   self.transport = 0
   params:set("clock_reset",1)
@@ -101,7 +101,7 @@ function Lattice:pulse()
         local pattern_end = (pattern.division * ppm)
         local swing_val = pattern_end * (2*self.swing/100)
         if not pattern.downbeat then 
-          swing_val = pattern_end * (2*self.swing/100)
+          swing_val = pattern_end * (2*(100-self.swing)/100)
         end          
         pattern_end = pattern_end - swing_val
         if pattern.phase > pattern_end then
@@ -157,7 +157,7 @@ function Pattern:new(args)
   -- swing_new is for updating swing on downbeat
   p.swing = args.swing
   p.swing_new = args.swing
-  p.downbeat=true
+  p.downbeat = false
   return p
 end
 
