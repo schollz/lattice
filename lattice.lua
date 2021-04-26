@@ -1,7 +1,7 @@
 -- lattice wip
 
-lattice = include("lib/lattice")
--- lattice = include("lattice/lib/lattice")
+lattice = include("lattice/lib/lattice")
+engine.name = 'PolyPerc'
 
 function init()
   -- basic lattice usage (uses defaults)
@@ -9,15 +9,20 @@ function init()
   my_lattice2 = lattice:new()
 
   pattern_a = my_lattice:new_pattern{
-    action = function(t) print("swinging", util.round(clock.get_beats())) end,
-    division = 1/4,
-    swing = 1
+    action = function(t) 
+	    print("swinging", util.round(clock.get_beats())) 
+	    engine.amp(0.5)
+	    engine.hz(440)
+    end,
+    division = 1/4
   }
 
-  -- pattern_b = my_lattice2:new_pattern{
-  --   action = function(t) print("4 on the floor", util.round(clock.get_beats())) end,
-  --   division = 1/4
-  -- }
+  pattern_b = my_lattice2:new_pattern{
+     action = function(t) 
+	     print("4 on the floor", util.round(clock.get_beats())) 
+     end,
+     division = 1/4
+  }
 
   -- demo stuff
   screen_dirty = true
@@ -61,7 +66,11 @@ function key(k, z)
 end
 
 function enc(e, d)
-  params:set("clock_tempo", params:get("clock_tempo") + d)
+  if e==1 then
+    params:set("clock_tempo", params:get("clock_tempo") + d)
+  else
+    pattern_a.set_swing(util.clamp(pattern_a.swing+d,0,100))
+  end
   screen_dirty = true
 end
 

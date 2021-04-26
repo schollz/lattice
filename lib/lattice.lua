@@ -109,6 +109,7 @@ function Lattice:pulse()
           pattern.swing_toggle = not pattern.swing_toggle
           pattern.action(self.transport)
           pattern.downbeat = not pattern.downbeat
+	  -- only update swing on the downbeat
           if pattern.downbeat and self.swing ~= self.swing_new then
             self.swing = self.swing_new
           end
@@ -157,7 +158,7 @@ function Pattern:new(args)
   -- swing_new is for updating swing on downbeat
   p.swing = args.swing
   p.swing_new = args.swing
-  p.downbeat = false
+  p.downbeat = false -- start as false so the first beat is *in* the downbeat
   return p
 end
 
