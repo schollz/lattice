@@ -98,6 +98,7 @@ function Lattice:pulse()
         pattern.phase = pattern.phase + 1
         local pattern_end = (pattern.division * ppm)
         if pattern.swing_val>0 then
+            -- is this how you do swing!?
           if pattern.swing_toggle then 
             pattern_end = pattern_end - (pattern_end/math.pow(2,pattern.swing_val))
           else

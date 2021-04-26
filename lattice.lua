@@ -9,15 +9,15 @@ function init()
   my_lattice2 = lattice:new()
 
   pattern_a = my_lattice:new_pattern{
-    action = function(t) print("qn1", clock.get_beats()) end,
+    action = function(t) print("swinging", util.round(clock.get_beats())) end,
     division = 1/4,
     swing = 1
   }
 
-  pattern_b = my_lattice2:new_pattern{
-    action = function(t) print("qn2", clock.get_beats()) end,
-    division = 1/4
-  }
+  -- pattern_b = my_lattice2:new_pattern{
+  --   action = function(t) print("4 on the floor", util.round(clock.get_beats())) end,
+  --   division = 1/4
+  -- }
 
   -- demo stuff
   screen_dirty = true
