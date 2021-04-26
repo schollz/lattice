@@ -44,6 +44,7 @@ function Lattice:reset()
   end
   for i, pattern in pairs(self.patterns) do
     pattern.phase = pattern.division * self.ppqn * self.meter
+    pattern.downbeat = true
   end
   self.transport = 0
   params:set("clock_reset",1)
@@ -96,19 +97,21 @@ function Lattice:pulse()
     for id, pattern in pairs(self.patterns) do
       if pattern.enabled then
         pattern.phase = pattern.phase + 1
+  
         local pattern_end = (pattern.division * ppm)
-        if pattern.swing_val>0 then
-            -- is this how you do swing!?
-          if pattern.swing_toggle then 
-            pattern_end = pattern_end - (pattern_end/math.pow(2,pattern.swing_val))
-          else
-            pattern_end = pattern_end + (pattern_end/math.pow(2,pattern.swing_val))
-          end          
-        end
+        local swing_val = pattern_end * (2*self.swing/100)
+        if not pattern.downbeat then 
+          swing_val = pattern_end * (2*self.swing/100)
+        end          
+        pattern_end = pattern_end - swing_val
         if pattern.phase > pattern_end then
           pattern.phase = pattern.phase - pattern_end
           pattern.swing_toggle = not pattern.swing_toggle
           pattern.action(self.transport)
+          pattern.downbeat = not pattern.downbeat
+          if pattern.downbeat and self.swing ~= self.swing_new then
+            self.swing = self.swing_new
+          end
         end
       elseif pattern.flag then
         self.patterns[pattern.id] = nil
@@ -132,8 +135,7 @@ function Lattice:new_pattern(args)
   args.division = args.division == nil and 1/4 or args.division
   args.enabled = args.enabled == nil and true or args.enabled
   args.phase = args.division * self.ppqn * self.meter
-  args.swing_val = args.swing == nil and 0 or args.swing
-  args.swing_toggle = false
+  args.swing = args.swing == nil and 50 or args.swing
   local pattern = Pattern:new(args)
   self.patterns[self.pattern_id_counter] = pattern
   return pattern
@@ -148,9 +150,14 @@ function Pattern:new(args)
   p.action = args.action
   p.enabled = args.enabled
   p.phase = args.phase
-  p.swing_val = args.swing_val
-  p.swing_toggle = args.swing_toggle
   p.flag = false
+  -- swing settings
+  -- swing is the current swing
+  -- downbeat keeps track of how to apply swing
+  -- swing_new is for updating swing on downbeat
+  p.swing = args.swing
+  p.swing_new = args.swing
+  p.downbeat=true
   return p
 end
 
@@ -185,6 +192,12 @@ end
 -- @tparam function the action
 function Pattern:set_action(fn)
   self.action = fn
+end
+
+--- set the swing of the pattern
+-- @tparam number the swing value 0-100%
+function Pattern:set_swing(swing)
+  self.swing_new=swing
 end
 
 return Lattice
