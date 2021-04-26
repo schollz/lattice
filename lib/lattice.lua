@@ -34,8 +34,8 @@ function Lattice:start()
   end
 end
 
---- reset the norns clock and restart lattice
-function Lattice:hard_restart()
+--- reset the norns clock without restarting lattice
+function Lattice:reset()
   -- destroy clock, but not the patterns
   self:stop()
   if self.superclock_id ~= nil then 
@@ -43,10 +43,15 @@ function Lattice:hard_restart()
     self.superclock_id = nil 
   end
   for i, pattern in pairs(self.patterns) do
-    self.patterns[i].phase = self.patterns[i].phase_end
+    pattern.phase = pattern.division * self.ppqn * self.meter
   end
   self.transport = 0
   params:set("clock_reset",1)
+end
+
+--- reset the norns clock and restart lattice
+function Lattice:hard_restart()
+  self:reset()
   self:start()
 end
 
@@ -91,8 +96,17 @@ function Lattice:pulse()
     for id, pattern in pairs(self.patterns) do
       if pattern.enabled then
         pattern.phase = pattern.phase + 1
-        if pattern.phase > (pattern.division * ppm) then
-          pattern.phase = pattern.phase - (pattern.division * ppm)
+        local pattern_end = (pattern.division * ppm)
+        if pattern.swing_val>0 then
+          if pattern.swing_toggle then 
+            pattern_end = pattern_end - (pattern_end/math.pow(2,pattern.swing_val))
+          else
+            pattern_end = pattern_end + (pattern_end/math.pow(2,pattern.swing_val))
+          end          
+        end
+        if pattern.phase > pattern_end then
+          pattern.phase = pattern.phase - pattern_end
+          pattern.swing_toggle = not pattern.swing_toggle
           pattern.action(self.transport)
         end
       elseif pattern.flag then
@@ -105,7 +119,7 @@ end
 
 --- factory method to add a new pattern to this lattice
 -- @tparam[opt] table args optional named attributes are:
--- - "action" (function) function called on each step of this division
+-- - "action" (function) called on each step of this division (lattice.transport is passed as the argument), defaults to a no-op
 -- - "division" (number) the division of the pattern, defaults to 1/4
 -- - "enabled" (boolean) is this pattern enabled, defaults to true
 -- @treturn table a new pattern
@@ -116,7 +130,9 @@ function Lattice:new_pattern(args)
   args.action = args.action == nil and function(t) return end or args.action
   args.division = args.division == nil and 1/4 or args.division
   args.enabled = args.enabled == nil and true or args.enabled
-  args.phase_end = args.division * self.ppqn * self.meter
+  args.phase = args.division * self.ppqn * self.meter
+  args.swing_val = args.swing == nil and 0 or args.swing
+  args.swing_toggle = false
   local pattern = Pattern:new(args)
   self.patterns[self.pattern_id_counter] = pattern
   return pattern
@@ -130,8 +146,9 @@ function Pattern:new(args)
   p.division = args.division
   p.action = args.action
   p.enabled = args.enabled
-  p.phase = args.phase_end
-  p.phase_end = args.phase_end
+  p.phase = args.phase
+  p.swing_val = args.swing_val
+  p.swing_toggle = args.swing_toggle
   p.flag = false
   return p
 end

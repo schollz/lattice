@@ -1,7 +1,7 @@
 -- lattice wip
 
--- lattice = include("lib/lattice")
-lattice = include("lattice/lib/lattice")
+lattice = include("lib/lattice")
+-- lattice = include("lattice/lib/lattice")
 
 function init()
   -- basic lattice usage (uses defaults)
@@ -10,7 +10,8 @@ function init()
 
   pattern_a = my_lattice:new_pattern{
     action = function(t) print("qn1", clock.get_beats()) end,
-    division = 1/4
+    division = 1/4,
+    swing = 1
   }
 
   pattern_b = my_lattice2:new_pattern{
