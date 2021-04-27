@@ -97,22 +97,14 @@ function Lattice:pulse()
     for id, pattern in pairs(self.patterns) do
       if pattern.enabled then
         pattern.phase = pattern.phase + 1
-  
-        local pattern_end = (pattern.division * ppm)
-        local swing_val = pattern_end * (2*self.swing/100)
+        local swing_val = (2*pattern.swing/100)
         if not pattern.downbeat then 
-          swing_val = pattern_end * (2*(100-self.swing)/100)
+          swing_val = (2*(100-pattern.swing)/100)
         end          
-        pattern_end = pattern_end - swing_val
-        if pattern.phase > pattern_end then
-          pattern.phase = pattern.phase - pattern_end
-          pattern.swing_toggle = not pattern.swing_toggle
+        if pattern.phase > (pattern.division * ppm)*swing_val then
+          pattern.phase = pattern.phase - (pattern.division * ppm)*swing_val
           pattern.action(self.transport)
           pattern.downbeat = not pattern.downbeat
-	  -- only update swing on the downbeat
-          if pattern.downbeat and self.swing ~= self.swing_new then
-            self.swing = self.swing_new
-          end
         end
       elseif pattern.flag then
         self.patterns[pattern.id] = nil
@@ -152,13 +144,8 @@ function Pattern:new(args)
   p.enabled = args.enabled
   p.phase = args.phase
   p.flag = false
-  -- swing settings
-  -- swing is the current swing
-  -- downbeat keeps track of how to apply swing
-  -- swing_new is for updating swing on downbeat
   p.swing = args.swing
-  p.swing_new = args.swing
-  p.downbeat = false -- start as false so the first beat is *in* the downbeat
+  p.downbeat = false 
   return p
 end
 
@@ -198,7 +185,7 @@ end
 --- set the swing of the pattern
 -- @tparam number the swing value 0-100%
 function Pattern:set_swing(swing)
-  self.swing_new=swing
+  self.swing=util.clamp(swing,0,100)
 end
 
 return Lattice

@@ -69,7 +69,7 @@ function enc(e, d)
   if e==1 then
     params:set("clock_tempo", params:get("clock_tempo") + d)
   else
-    pattern_a.set_swing(util.clamp(pattern_a.swing+d,0,100))
+    pattern_a:set_swing(util.clamp(pattern_a.swing+d,0,100))
   end
   screen_dirty = true
 end
@@ -97,7 +97,7 @@ function redraw()
   screen.font_size(8)
   screen.font_face(0)
   screen.move(1, 8)
-  screen.text(params:get("clock_tempo") .. " BPM")
+  screen.text(params:get("clock_tempo") .. " BPM, swing = "..pattern_a.swing.."%")
   screen.update()
 end
 
